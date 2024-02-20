@@ -52,6 +52,10 @@ def chisq(model_params, model_function, x_data, y_data, y_err):
         chisqval += ((y_data[i] - model_funct(x_data[i], *model_params)) / y_err[i]) ** 2
     return chisqval
 
+def linear(t, *vals):
+    F = vals[0] * t + vals[1]
+    return F
+
 def exp(t, *vals):
     F = vals[0] * np.exp(-vals[1] * t)
     return F
@@ -101,18 +105,23 @@ T = np.array(T[S_t:E_t])
 R = R[S_r:E_r]
 R_inv = 1/(np.array(R))
 R_err = 0.00001 * np.ones(len(R))      # error in R check
-#T_off = T - T[0]
+a = 13.42
+T_off = T - T[0] + a
+T = T_off
+
+values = [0.00063, 0]
 
 "shows plot of cleaned data"
-plt.errorbar(T, R_inv, yerr=R_err)
+plt.errorbar(T_off, R_inv, yerr=R_err)
+plt.plot(T - a, linear(T - a, *values))
 plt.ylim(0,R_inv[-1])
-plt.xlim(0,T[-1])
+plt.xlim(0,T_off[-1])
 plt.show()
 
 
 """starting chi_sq optimisation"""
 
-model_funct = kelvin     # choose the model function to fit the data
+model_funct = linear_S     # choose the model function to fit the data
 
 "initial parameters"
 
@@ -230,3 +239,4 @@ plt.figure(figsize=[10, 6])
 plt.plot(xval, 1/yval)
 plt.errorbar(xval, 1/model_funct(xval, *popt), yerr=1.5 * np.ones(len(R)))
 plt.show()
+
