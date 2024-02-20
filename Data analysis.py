@@ -45,30 +45,6 @@ def find_value(file, value):
             positions.append(i)
     return positions[0]
 
-
-'''
-def find_index(file, value):   # find index of the first value where R changes dramatically 
-    positions = []
-    for d in file:
-        if d > value:
-            positions.append(file.index(d))
-    S_E = []
-    for i,p in enumerate(positions):
-        pos = positions.copy()
-        if pos[i] + 1 == pos[i + 1]:
-            S_E.append([positions[i])
-
-def clean_array(array, limit, pos, r, limit2):
-    cleaned_array = []
-    for value in array:
-        if value <= limit:
-            cleaned_array.append(value)
-    for i, value in enumerate(cleaned_array):
-        if pos - r <= i <= pos + r and value >= limit2:
-            cleaned_array.remove(value)
-    return cleaned_array
-'''
-
 T = get_T(file)
 R = get_R(file)
 R = clean(R, 10 ** 3)
@@ -98,11 +74,13 @@ T = np.array(T[S_t:E_t])
 R = R[S_r:E_r]
 R_inv = 1/(np.array(R))
 R_err = 0.00001 * np.ones(len(R))      # error in R check
+#T_off = T - T[0]
 
-'''
-plt.errorbar(T, R, yerr=R_err)
+
+plt.errorbar(T, R_inv, yerr=R_err)
+plt.ylim(0,R_inv[-1])
+plt.xlim(0,T[-1])
 plt.show()
-'''
 
 def exp(t, *vals):
     F = vals[0] * np.exp(-vals[1] * t)
@@ -116,7 +94,11 @@ def linear_S(t, *vals):
     F = 1/(vals[0] + vals[1]) + ( 1/vals[0] - 1/(vals[0] + vals[1]) ) * ( 1 - np.exp(- t * (vals[0] * vals[1])/(vals[2] * (vals[0] + vals[1]))) )
     return F
 
-model_funct = linear_S
+def quant(t, *vals):
+    F = 1/(vals[0] * t) ** 2
+    return F
+
+model_funct = kelvin
 
 # inital parameters
 if model_funct == kelvin:
@@ -134,29 +116,27 @@ if model_funct == kelvin:
     initial = np.array([a, b])
 
 if model_funct == linear_S:
-    a = 1 / (
-        # 0.0077   #1
-        # 0.010013316627657575  #2
-        0.009500850220917489  # 3
+    a = (
+        #666 #1
+        99.56929353055796 #6
     )
-    b = 1 / (
-        # 0.0077   #1
-        # 0.010013316627657575  #2
-        0.009500850220917489  # 3
+    b = (
+        #667 #1
+        -1207.2183402614955 #6
     )
-    c = 1 /( a *
-        # 40      #1
-        # 3.1369479144666803    #2
-        30.734435398949792  # 3
+    c = (
+        #3000 #1
+        2835.0578267342435 #6
 
     )
 
-    values = [[9, 15, 50], [8, 10, 50], [8, 15, 30]]
+    values = [[666, 667, 3000], [99.56929353055796, -1207.2183402614955, 2835.0578267342435]]
     label = ['change ko', 'change k1', 'change e']
     plt.figure()
     for v in values:
         y = model_funct(T, *v)
         plt.plot(T, y, label=label[values.index(v)])
+        #plt.ticklabel_format(axis='y', style='plain')
         plt.show()
 
     initial = np.array([a, b, c])
@@ -174,8 +154,6 @@ assert len(yerr) == len(yval)
 n_bins = 20
 # plt.hist(yerr, bins=n_bins)
 # plt.show
-
-
 
 # plotting initial model function against data
 plt.figure()
@@ -229,27 +207,27 @@ P = scipy.stats.chi2.sf(chisq_min, deg_freedom)
 print('$P(chi^2_min, DoF)$ = {}'.format(P))
 
 ###full plot of data with optimised model function
+#plot 1/R
 plt.figure(figsize=[10, 6])
 plt.errorbar(xval, yval, yerr=yerr, marker='o', ms=1, linestyle='None', label='Data')
-plt.xlabel('Width [m]')
-plt.ylabel('Normalised intensity')
-
-xs = np.linspace(xval[0], xval[-1], 1000)
-plt.plot(xs,
-            model_funct(xs, *popt),
+plt.plot(xval,
+            model_funct(xval, *popt),
             'r', label='Model function')
-
+plt.xlabel('Time')
+plt.ylabel('1/R')
+plt.ylim(0,R_inv[-1])
+plt.xlim(0,T[-1])
 plt.legend()
 plt.show()
 
+#plot R
+plt.figure(figsize=[10, 6])
 plt.plot(xval, 1/yval)
 plt.errorbar(xval, 1/model_funct(xval, *popt), yerr=1.5 * np.ones(len(R)))
 plt.show()
 
-## Uncertainties
-
+### Uncertainties
 # errors of the optimised parameters
-
 popt_errs = np.sqrt(np.diag(cov))
 print(popt_errs)
 
