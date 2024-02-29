@@ -119,7 +119,7 @@ def quant(t, *vals):
     return F
 
 """import data"""
-sensor, i = find_sensor(files_RT, N, R)
+sensor, i = find_sensor(files_25, N, R)
 file = (dir + "\\Data\\" + Temp[i] + " Temp\\" + sensor)
 print(file)
 Start_resistance = Start_resistance_RT
@@ -153,7 +153,7 @@ plt.show()
 
 """starting chi_sq optimisation"""
 
-model_funct =  linear_S    # choose the model function to fit the data
+model_funct =  Burger    # choose the model function to fit the data
 
 "initial parameters"
 
@@ -193,18 +193,18 @@ if model_funct == linear_S:        # if the model function is the linear solid m
 
 if model_funct == Burger:        # if the model function is the Burger model
     a = (
-        0.0008 #1
+        180 #1
     )
 
     b = (
-        -5000  #1
+        200  #1
     )
     c = (
-        3000 #1
+        20000 #1
     )
 
     d = (
-        10000 #1
+        2000000 #1
     )
 
     initial = np.array([a, b, c, d])
